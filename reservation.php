@@ -64,7 +64,7 @@
             background-color: rgba(255, 255, 255, 0.8);
             padding: 30px;
             border-radius: 10px;
-            margin-top: 300px;
+            margin-top: 200px;
             max-width: 500px;
             margin-left: auto;
             margin-right: auto;
@@ -83,14 +83,39 @@
 </head>
 <body>
     <?php
-    // Define an array of background images
+    include('dbcon.php');
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        // 獲取表單數據
+        $name = $_POST['name'];
+        $phone = $_POST['phone'];
+        $person = $_POST['person'];
+        $date = $_POST['date'];
+        $time = $_POST['time'];
+        $table_number = $_POST['table'];
+        $status = "Pending"; // 預設為 Pending 狀態
+    
+        // 插入數據到數據庫
+        $query = "INSERT INTO booking_details (Guest_Name, Phone_Number, Number_of_Person, Date, Time, Table_Number, Status)
+                  VALUES ( ?, ?, ?, ?, ?, ?, ?)";
+    
+        $stmt = $db_connect->prepare($query); // 使用預處理語句
+        $stmt->bind_param("siissis",  $name, $phone, $person, $date, $time, $table_number, $status);
+    
+        if ($stmt->execute()) {
+            echo "<script>alert('Reservation successfully added!'); window.location.href='reservation.php';</script>";
+        } else {
+            echo "<script>alert('Error: Unable to make a reservation. Please try again later.');</script>";
+        }
+    
+        $stmt->close();
+        $db_connect->close();
+    }
     $backgroundImages = [
         'image/restaurant.jpg',
         'image/food.jpg',
         'image/france.jpg'
     ];
     ?>
-
     <nav class="navbar navbar-expand-lg navbar-light">
         <div class="container-fluid">
             <a class="navbar-brand" href="index.php">Sobar</a>
@@ -132,6 +157,7 @@
         <div class="reservation-container">
             <h2 class="text-center mb-4">Make a Reservation</h2>
             <form action="reservation.php" method="POST">
+            
                 <div class="mb-3">
                     <label for="name" class="form-label">Name</label>
                     <input type="text" class="form-control" id="name" name="name" required>
@@ -139,6 +165,10 @@
                 <div class="mb-3">
                     <label for="phone" class="form-label">Phone</label>
                     <input type="tel" class="form-control" id="phone" name="phone" required>
+                </div>
+                <div class="mb-3">
+                    <label for="person" class="form-label">Number of Person</label>
+                    <input type="number" class="form-control" id="person" name="person" required>
                 </div>
                 <div class="mb-3">
                     <label for="date" class="form-label">Date</label>
@@ -149,8 +179,8 @@
                     <input type="time" class="form-control" id="time" name="time" required>
                 </div>
                 <div class="mb-3">
-                    <label for="guests" class="form-label">Number of Guests</label>
-                    <input type="number" class="form-control" id="guests" name="guests" min="1" max="20" required>
+                    <label for="table" class="form-label">Table_number</label>
+                    <input type="number" class="form-control" id="table" name="table" required>
                 </div>
                 <button type="submit" class="btn btn-primary w-100">Reserve Now</button>
             </form>
